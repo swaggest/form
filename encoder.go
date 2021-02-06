@@ -28,7 +28,6 @@ func (e *encoder) setError(namespace []byte, err error) {
 }
 
 func (e *encoder) setVal(namespace []byte, vals ...string) {
-
 	arr, ok := e.values[string(namespace)]
 	if ok {
 		arr = append(arr, vals...)
@@ -43,7 +42,6 @@ func (e *encoder) setVal(namespace []byte, vals ...string) {
 }
 
 func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
-
 	typ := v.Type()
 	l := len(namespace)
 	first := l == 0
@@ -60,6 +58,7 @@ func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
 
 		if f.isAnonymous && e.e.embedAnonymous {
 			e.setFieldByType(v.Field(f.idx), namespace, idx, f.isOmitEmpty)
+
 			continue
 		}
 
@@ -82,7 +81,6 @@ func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
 }
 
 func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx int, isOmitEmpty bool) {
-
 	if idx > -1 && current.Kind() == reflect.Ptr {
 		namespace = append(namespace, '[')
 		namespace = strconv.AppendInt(namespace, int64(idx), 10)
@@ -93,6 +91,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 	if isOmitEmpty && !hasValue(current) {
 		return
 	}
+
 	v, kind := ExtractType(current)
 
 	if e.goValues != nil {
@@ -100,12 +99,11 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 	}
 
 	if e.e.customTypeFuncs != nil {
-
 		if cf, ok := e.e.customTypeFuncs[v.Type()]; ok {
-
 			val, err := cf(v.Interface())
 			if err != nil {
 				e.setError(namespace, err)
+
 				return
 			}
 
@@ -116,6 +114,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			}
 
 			e.setVal(namespace, val)
+
 			return
 		}
 	}
@@ -125,6 +124,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			val, err := tu.MarshalText()
 			if err != nil {
 				e.setError(namespace, err)
+
 				return
 			}
 
@@ -135,6 +135,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			}
 
 			e.setVal(namespace, string(val))
+
 			return
 		}
 	}
@@ -144,32 +145,25 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		return
 
 	case reflect.String:
-
 		e.setVal(namespace, v.String())
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-
 		e.setVal(namespace, strconv.FormatUint(v.Uint(), 10))
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-
 		e.setVal(namespace, strconv.FormatInt(v.Int(), 10))
-	case reflect.Float32:
 
+	case reflect.Float32:
 		e.setVal(namespace, strconv.FormatFloat(v.Float(), 'f', -1, 32))
 
 	case reflect.Float64:
-
 		e.setVal(namespace, strconv.FormatFloat(v.Float(), 'f', -1, 64))
 
 	case reflect.Bool:
-
 		e.setVal(namespace, strconv.FormatBool(v.Bool()))
 
 	case reflect.Slice, reflect.Array:
-
 		if idx == -1 {
-
 			for i := 0; i < v.Len(); i++ {
 				e.setFieldByType(v.Index(i), namespace, i, false)
 			}
@@ -194,19 +188,20 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		}
 
 	case reflect.Map:
-
 		if idx > -1 {
 			namespace = append(namespace, '[')
 			namespace = strconv.AppendInt(namespace, int64(idx), 10)
 			namespace = append(namespace, ']')
 		}
 
-		var valid bool
-		var s string
+		var (
+			valid bool
+			s     string
+		)
+
 		l := len(namespace)
 
 		for _, key := range v.MapKeys() {
-
 			namespace = namespace[:l]
 
 			if s, valid = e.getMapKey(key, namespace); !valid {
@@ -221,10 +216,8 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		}
 
 	case reflect.Struct:
-
 		// if we get here then no custom time function declared so use RFC3339 by default
 		if v.Type() == timeType {
-
 			if idx > -1 {
 				namespace = append(namespace, '[')
 				namespace = strconv.AppendInt(namespace, int64(idx), 10)
@@ -232,11 +225,13 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			}
 
 			e.setVal(namespace, v.Interface().(time.Time).Format(time.RFC3339))
+
 			return
 		}
 
 		if idx == -1 {
 			e.traverseStruct(v, namespace, idx)
+
 			return
 		}
 
@@ -251,15 +246,14 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 }
 
 func (e *encoder) getMapKey(key reflect.Value, namespace []byte) (string, bool) {
-
 	v, kind := ExtractType(key)
 
 	if e.e.customTypeFuncs != nil {
-
 		if cf, ok := e.e.customTypeFuncs[v.Type()]; ok {
 			val, err := cf(v.Interface())
 			if err != nil {
 				e.setError(namespace, err)
+
 				return "", false
 			}
 
@@ -290,7 +284,8 @@ func (e *encoder) getMapKey(key reflect.Value, namespace []byte) (string, bool) 
 		return strconv.FormatBool(v.Bool()), true
 
 	default:
-		e.setError(namespace, fmt.Errorf("Unsupported Map Key '%v' Namespace '%s'", v.String(), namespace))
+		e.setError(namespace, fmt.Errorf("unsupported map key '%v' namespace '%s'", v.String(), namespace))
+
 		return "", false
 	}
 }

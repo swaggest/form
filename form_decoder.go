@@ -8,15 +8,10 @@ import (
 	"sync"
 )
 
-// DEPRECATED
-// Use DecodeFunc
-// DecodeCustomTypeFunc allows for registering/overriding types to be parsed.
-type DecodeCustomTypeFunc func([]string) (interface{}, error)
-
 // DecodeFunc allows for registering/overriding types to be parsed.
 type DecodeFunc func(string) (interface{}, error)
 
-// DecodeErrors is a map of errors encountered during form decoding
+// DecodeErrors is a map of errors encountered during form decoding.
 type DecodeErrors map[string]error
 
 func (d DecodeErrors) Error() string {
@@ -40,7 +35,6 @@ type InvalidDecoderError struct {
 }
 
 func (e *InvalidDecoderError) Error() string {
-
 	if e.Type == nil {
 		return "form: Decode(nil)"
 	}
@@ -66,7 +60,7 @@ type recursiveData struct {
 
 type dataMap []*recursiveData
 
-// Decoder is the main decode instance
+// Decoder is the main decode instance.
 type Decoder struct {
 	tagName         string
 	mode            Mode
@@ -76,14 +70,15 @@ type Decoder struct {
 	dataPool        *sync.Pool
 }
 
-// NewDecoder creates a new decoder instance with sane defaults
-func NewDecoder() *Decoder {
+const defaultMaxArraySize = 10000
 
+// NewDecoder creates a new decoder instance with sane defaults.
+func NewDecoder() *Decoder {
 	d := &Decoder{
 		tagName:      "form",
 		mode:         ModeImplicit,
 		structCache:  newStructCacheMap(),
-		maxArraySize: 10000,
+		maxArraySize: defaultMaxArraySize,
 	}
 
 	d.dataPool = &sync.Pool{New: func() interface{} {
@@ -97,13 +92,15 @@ func NewDecoder() *Decoder {
 }
 
 // SetTagName sets the given tag name to be used by the decoder.
-// Default is "form"
+//
+// Default is "form".
 func (d *Decoder) SetTagName(tagName string) {
 	d.tagName = tagName
 }
 
-// SetMode sets the mode the decoder should run
-// Default is ModeImplicit
+// SetMode sets the mode the decoder should run.
+//
+// Default is ModeImplicit.
 func (d *Decoder) SetMode(mode Mode) {
 	d.mode = mode
 }
@@ -112,7 +109,8 @@ func (d *Decoder) SetMode(mode Mode) {
 // This limit is for the array indexing this library supports to
 // avoid potential DOS or man-in-the-middle attacks using an unusually
 // high number.
-// DEFAULT: 10000
+//
+// Default is 10000.
 func (d *Decoder) SetMaxArraySize(size uint) {
 	d.maxArraySize = int(size)
 }
@@ -127,25 +125,6 @@ func (d *Decoder) RegisterTagNameFunc(fn TagNameFunc) {
 	d.structCache.tagFn = fn
 }
 
-// DEPRECATED
-// Please use RegisterFunc
-// RegisterCustomTypeFunc registers a DecodeCustomTypeFunc against a number of types.
-// NOTE: This method is not thread-safe it is intended that these all be registered prior to any parsing
-//
-// ADDITIONAL: if a struct type is registered, the function will only be called if a url.Value exists for
-// the struct and not just the struct fields eg. url.Values{"User":"Name%3Djoeybloggs"} will call the
-// custom type function with `User` as the type, however url.Values{"User.Name":"joeybloggs"} will not.
-func (d *Decoder) RegisterCustomTypeFunc(fn DecodeCustomTypeFunc, types ...interface{}) {
-
-	if d.customTypeFuncs == nil {
-		d.customTypeFuncs = map[reflect.Type]DecodeFunc{}
-	}
-
-	for _, t := range types {
-		d.customTypeFuncs[reflect.TypeOf(t)] = func(v string) (interface{}, error) { return fn([]string{v}) }
-	}
-}
-
 // RegisterFunc registers a DecodeFunc against a number of types.
 // NOTE: This method is not thread-safe it is intended that these all be registered prior to any parsing
 //
@@ -153,7 +132,6 @@ func (d *Decoder) RegisterCustomTypeFunc(fn DecodeCustomTypeFunc, types ...inter
 // the struct and not just the struct fields eg. url.Values{"User":"Name%3Djoeybloggs"} will call the
 // custom type function with `User` as the type, however url.Values{"User.Name":"joeybloggs"} will not.
 func (d *Decoder) RegisterFunc(fn DecodeFunc, types ...interface{}) {
-
 	if d.customTypeFuncs == nil {
 		d.customTypeFuncs = map[reflect.Type]DecodeFunc{}
 	}
@@ -166,15 +144,14 @@ func (d *Decoder) RegisterFunc(fn DecodeFunc, types ...interface{}) {
 // Decode parses the given values and sets the corresponding struct and/or type values
 //
 // Decode returns an InvalidDecoderError if interface passed is invalid.
-func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...map[string]interface{}) (err error) {
-
+func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...map[string]interface{}) error {
 	val := reflect.ValueOf(v)
 
 	if val.Kind() != reflect.Ptr || val.IsNil() {
-		return &InvalidDecoderError{reflect.TypeOf(v)}
+		return &InvalidDecoderError{Type: reflect.TypeOf(v)}
 	}
 
-	dec := d.dataPool.Get().(*decoder)
+	dec := d.dataPool.Get().(*decoder) // nolint:errcheck
 	dec.values = values
 	dec.dm = dec.dm[0:0]
 
@@ -185,10 +162,13 @@ func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...ma
 		if len(collectGoValues) > 0 {
 			dec.goValues = collectGoValues[0]
 		}
+
 		dec.traverseStruct(val, typ, dec.namespace[0:0])
 	} else {
 		dec.setFieldByType(val, dec.namespace[0:0], 0)
 	}
+
+	var err error
 
 	if len(dec.errs) > 0 {
 		err = dec.errs
@@ -197,5 +177,5 @@ func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...ma
 
 	d.dataPool.Put(dec)
 
-	return
+	return err
 }

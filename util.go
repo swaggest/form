@@ -6,12 +6,11 @@ import (
 )
 
 // ExtractType gets the actual underlying type of field value.
-// it is exposed for use within you Custom Functions
+//
+// It is exposed for use within you Custom Functions.
 func ExtractType(current reflect.Value) (reflect.Value, reflect.Kind) {
-
 	switch current.Kind() {
 	case reflect.Ptr:
-
 		if current.IsNil() {
 			return current, reflect.Ptr
 		}
@@ -19,7 +18,6 @@ func ExtractType(current reflect.Value) (reflect.Value, reflect.Kind) {
 		return ExtractType(current.Elem())
 
 	case reflect.Interface:
-
 		if current.IsNil() {
 			return current, reflect.Interface
 		}
@@ -32,7 +30,6 @@ func ExtractType(current reflect.Value) (reflect.Value, reflect.Kind) {
 }
 
 func parseBool(str string) (bool, error) {
-
 	switch str {
 	case "1", "t", "T", "true", "TRUE", "True", "on", "yes", "ok":
 		return true, nil
@@ -45,7 +42,7 @@ func parseBool(str string) (bool, error) {
 	return false, &strconv.NumError{Func: "ParseBool", Num: str, Err: strconv.ErrSyntax}
 }
 
-// hasValue determines if a reflect.Value is it's default value
+// hasValue determines if a reflect.Value is it's default value.
 func hasValue(field reflect.Value) bool {
 	switch field.Kind() {
 	case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Func:

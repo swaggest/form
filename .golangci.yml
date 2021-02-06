@@ -1,0 +1,49 @@
+# See https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+run:
+  tests: true
+  deadline: 5m
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocyclo:
+    min-complexity: 20
+  dupl:
+    threshold: 100
+  misspell:
+    locale: US
+  unused:
+    check-exported: false
+  unparam:
+    check-exported: true
+
+linters:
+  enable-all: true
+  disable:
+    - testpackage
+    - wrapcheck
+    - goerr113
+    - gochecknoglobals
+    - exhaustive
+    - nestif
+    - funlen
+    - gocognit
+    - gocyclo
+    - gomnd
+    - forbidigo
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - linters:
+        - gomnd
+        - goconst
+        - exhaustivestruct
+        - maligned
+        - goerr113
+        - errorlint
+        - funlen
+        - errcheck
+        - dupl
+      path: "_test.go"

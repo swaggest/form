@@ -7,28 +7,11 @@ import (
 	"testing"
 	"time"
 
-	. "gopkg.in/go-playground/assert.v1"
+	. "github.com/stretchr/testify/assert"
 )
 
-// NOTES:
-// - Run "go test" to run tests
-// - Run "gocov test | gocov report" to report on test converage by file
-// - Run "gocov test | gocov annotate -" to report on all code and functions, those ,marked with "MISS" were never called
-//
-// or
-//
-// -- may be a good idea to change to output path to somewherelike /tmp
-// go test -coverprofile cover.out && go tool cover -html=cover.out -o cover.html
-//
-//
-// go test -cpuprofile cpu.out
-// ./validator.test -test.bench=. -test.cpuprofile=cpu.prof
-// go tool pprof validator.test cpu.prof
-//
-//
-// go test -memprofile mem.out
-
 func TestEncoderInt(t *testing.T) {
+	t.Parallel()
 
 	type TestInt struct {
 		Int              int
@@ -194,6 +177,7 @@ func TestEncoderInt(t *testing.T) {
 }
 
 func TestEncoderUint(t *testing.T) {
+	t.Parallel()
 
 	type TestUint struct {
 		Uint              uint
@@ -360,6 +344,7 @@ func TestEncoderUint(t *testing.T) {
 }
 
 func TestEncoderString(t *testing.T) {
+	t.Parallel()
 
 	type TestString struct {
 		String              string
@@ -487,6 +472,7 @@ func TestEncoderString(t *testing.T) {
 }
 
 func TestEncoderFloat(t *testing.T) {
+	t.Parallel()
 
 	type TestFloat struct {
 		Float32              float32
@@ -706,6 +692,7 @@ func TestEncoderFloat(t *testing.T) {
 }
 
 func TestEncoderBool(t *testing.T) {
+	t.Parallel()
 
 	type TestBool struct {
 		Bool              bool
@@ -820,6 +807,7 @@ func TestEncoderBool(t *testing.T) {
 }
 
 func TestEncoderStruct(t *testing.T) {
+	t.Parallel()
 
 	type Phone struct {
 		Number string
@@ -1019,6 +1007,7 @@ func TestEncoderStruct(t *testing.T) {
 }
 
 func TestDecodeAllNonStructTypes(t *testing.T) {
+	t.Parallel()
 
 	encoder := NewEncoder()
 
@@ -1133,6 +1122,7 @@ func TestDecodeAllNonStructTypes(t *testing.T) {
 }
 
 func TestEncoderNativeTime(t *testing.T) {
+	t.Parallel()
 
 	type TestError struct {
 		Time        time.Time
@@ -1160,6 +1150,7 @@ func TestEncoderNativeTime(t *testing.T) {
 }
 
 func TestEncoderErrors(t *testing.T) {
+	t.Parallel()
 
 	tm, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
 	Equal(t, err, nil)
@@ -1179,7 +1170,7 @@ func TestEncoderErrors(t *testing.T) {
 
 	encoder := NewEncoder()
 	encoder.RegisterFunc(func(x interface{}) (string, error) {
-		return "", errors.New("Bad Type Conversion")
+		return "", errors.New("bad type conversion")
 	}, time.Time{})
 
 	values, errs := encoder.Encode(&test)
@@ -1194,22 +1185,23 @@ func TestEncoderErrors(t *testing.T) {
 	Equal(t, len(ee), 3)
 
 	k := ee["Time"]
-	Equal(t, k.Error(), "Bad Type Conversion")
+	Equal(t, k.Error(), "bad type conversion")
 
 	k = ee["BadMapKey"]
-	Equal(t, k.Error(), "Bad Type Conversion")
+	Equal(t, k.Error(), "bad type conversion")
 
 	k = ee["Struct"]
-	Equal(t, k.Error(), "Unsupported Map Key '<struct {} Value>' Namespace 'Struct'")
+	Equal(t, k.Error(), "unsupported map key '<struct {} Value>' namespace 'Struct'")
 }
 
 func TestEncoderPanicsAndBadValues(t *testing.T) {
+	t.Parallel()
 
 	encoder := NewEncoder()
 
 	values, err := encoder.Encode(nil)
 	NotEqual(t, err, nil)
-	Equal(t, values, nil)
+	Nil(t, values)
 
 	_, ok := err.(*InvalidEncodeError)
 	Equal(t, ok, true)
@@ -1222,8 +1214,8 @@ func TestEncoderPanicsAndBadValues(t *testing.T) {
 	var tst *TestStruct
 
 	values, err = encoder.Encode(tst)
-	NotEqual(t, err, nil)
-	Equal(t, values, nil)
+	EqualError(t, err, "form: Encode(nil *form.TestStruct)")
+	Nil(t, values)
 
 	_, ok = err.(*InvalidEncodeError)
 	Equal(t, ok, true)
@@ -1231,6 +1223,7 @@ func TestEncoderPanicsAndBadValues(t *testing.T) {
 }
 
 func TestEncoderExplicit(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		Name string `form:"Name"`
@@ -1252,6 +1245,7 @@ func TestEncoderExplicit(t *testing.T) {
 }
 
 func TestEncoderRegisterTagNameFunc(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		Name string `json:"name"`
@@ -1281,6 +1275,7 @@ func TestEncoderRegisterTagNameFunc(t *testing.T) {
 }
 
 func TestEncoderEmbedModes(t *testing.T) {
+	t.Parallel()
 
 	type A struct {
 		Field string
@@ -1315,6 +1310,7 @@ func TestEncoderEmbedModes(t *testing.T) {
 }
 
 func TestOmitEmpty(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		String  string            `form:",omitempty"`
@@ -1371,6 +1367,7 @@ func TestOmitEmpty(t *testing.T) {
 		Array  []*string `form:"arr,omitempty"`
 		Array2 []*string `form:"arr2,dive,omitempty"`
 	}
+
 	x := uint8(0)
 	s := ""
 	tst4 := T{
@@ -1386,15 +1383,20 @@ func TestOmitEmpty(t *testing.T) {
 }
 
 func TestEncodeWithCollectionFormat(t *testing.T) {
+	t.Parallel()
+
 	type EmbeddedName struct {
 		Names []string `form:"names" collectionFormat:"csv"`
 	}
+
 	var data struct {
 		EmbeddedName
 		Age int `form:"age"`
 	}
+
 	data.Age = 66
 	data.Names = []string{"John", "Paul", "Ringo", "George"}
+
 	encoder := NewEncoder()
 
 	values, err := encoder.Encode(data)
@@ -1405,9 +1407,12 @@ func TestEncodeWithCollectionFormat(t *testing.T) {
 }
 
 func TestEncoder_EncodeWithColumns(t *testing.T) {
+	t.Parallel()
+
 	type EmbeddedName struct {
 		Names []string `form:"names" collectionFormat:"csv"`
 	}
+
 	type EmbeddedTail struct {
 		Tail string `form:"tail"`
 	}
@@ -1418,6 +1423,7 @@ func TestEncoder_EncodeWithColumns(t *testing.T) {
 		Age int `form:"age"`
 		EmbeddedTail
 	}
+
 	data.Age = 66
 	data.Names = []string{"John", "Paul", "Ringo", "George"}
 	encoder := NewEncoder()
@@ -1432,10 +1438,13 @@ func TestEncoder_EncodeWithColumns(t *testing.T) {
 }
 
 func TestEncoder_Encode_textMarshal(t *testing.T) {
+	t.Parallel()
+
 	var data struct {
 		Value textMarshaler `form:"value"`
 		Time  *time.Time    `form:"time"`
 	}
+
 	data.Value = "abc"
 	encoder := NewEncoder()
 
@@ -1445,14 +1454,18 @@ func TestEncoder_Encode_textMarshal(t *testing.T) {
 }
 
 func TestEncoder_Encode_collectGoValues(t *testing.T) {
+	t.Parallel()
+
 	type Emb struct {
 		Extra float64 `form:"emb"`
 	}
+
 	var data struct {
 		Emb
 		Value string `form:"value"`
 		Num   int    `form:"num"`
 	}
+
 	data.Value = "abc"
 	data.Num = 123
 	data.Extra = 1.23

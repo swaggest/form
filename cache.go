@@ -2,10 +2,13 @@ package form
 
 import (
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
 )
+
+var _ sort.Interface = cacheFields{}
 
 type cacheFields []cachedField
 
@@ -39,11 +42,10 @@ type structCacheMap struct {
 	tagFn TagNameFunc
 }
 
-// TagNameFunc allows for adding of a custom tag name parser
+// TagNameFunc allows for adding of a custom tag name parser.
 type TagNameFunc func(field reflect.StructField) string
 
 func newStructCacheMap() *structCacheMap {
-
 	sc := new(structCacheMap)
 	sc.m.Store(make(map[reflect.Type]*cachedStruct))
 
@@ -52,23 +54,25 @@ func newStructCacheMap() *structCacheMap {
 
 func (s *structCacheMap) Get(key reflect.Type) (value *cachedStruct, ok bool) {
 	value, ok = s.m.Load().(map[reflect.Type]*cachedStruct)[key]
+
 	return
 }
 
 func (s *structCacheMap) Set(key reflect.Type, value *cachedStruct) {
-
-	m := s.m.Load().(map[reflect.Type]*cachedStruct)
+	m := s.m.Load().(map[reflect.Type]*cachedStruct) // nolint:errcheck
 
 	nm := make(map[reflect.Type]*cachedStruct, len(m)+1)
+
 	for k, v := range m {
 		nm[k] = v
 	}
+
 	nm[key] = value
+
 	s.m.Store(nm)
 }
 
 func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key reflect.Type, tagName string) *cachedStruct {
-
 	s.lock.Lock()
 
 	// could have been multiple trying to access, but once first is done this ensures struct
@@ -76,19 +80,23 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 	cs, ok := s.Get(key)
 	if ok {
 		s.lock.Unlock()
+
 		return cs
 	}
 
 	typ := current.Type()
-	cs = &cachedStruct{fields: make([]cachedField, 0, 4)} // init 4, betting most structs decoding into have at aleast 4 fields.
+	// init 4, betting most structs decoding into have at least 4 fields.
+	cs = &cachedStruct{fields: make([]cachedField, 0, 4)}
 
 	numFields := current.NumField()
 
-	var fld reflect.StructField
-	var name string
-	var idx int
-	var isOmitEmpty bool
-	var sliceSeparator byte
+	var (
+		fld            reflect.StructField
+		name           string
+		idx            int
+		isOmitEmpty    bool
+		sliceSeparator byte
+	)
 
 	for i := 0; i < numFields; i++ {
 		isOmitEmpty = false
@@ -125,16 +133,12 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 			switch cf {
 			case "csv":
 				sliceSeparator = ','
-				break
 			case "tsv":
 				sliceSeparator = '\t'
-				break
 			case "ssv":
 				sliceSeparator = ' '
-				break
 			case "pipes":
 				sliceSeparator = '|'
-				break
 			}
 		}
 
@@ -142,8 +146,10 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 			name = fld.Name
 		}
 
-		cs.fields = append(cs.fields, cachedField{idx: i, name: name, isAnonymous: fld.Anonymous,
-			isOmitEmpty: isOmitEmpty, sliceSeparator: sliceSeparator})
+		cs.fields = append(cs.fields, cachedField{
+			idx: i, name: name, isAnonymous: fld.Anonymous,
+			isOmitEmpty: isOmitEmpty, sliceSeparator: sliceSeparator,
+		})
 	}
 
 	s.Set(typ, cs)
