@@ -1,9 +1,8 @@
 Package form
 ============
-[![Build Status](https://travis-ci.org/swaggest/form.svg?branch=master)](https://travis-ci.org/swaggest/form)
+[![Build Status](https://github.com/swaggest/form/workflows/test/badge.svg)](https://github.com/swaggest/form/actions?query=branch%3Amaster+workflow%3Atest)
 [![Coverage Status](https://codecov.io/gh/swaggest/form/branch/master/graph/badge.svg)](https://codecov.io/gh/swaggest/form)
-[![GoDoc](https://godoc.org/github.com/swaggest/form?status.svg)](https://godoc.org/github.com/swaggest/form)
-![License](https://img.shields.io/dub/l/vibe-d.svg)
+[![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/github.com/swaggest/form)
 
 Package form Decodes url.Values into Go value(s) and Encodes Go value(s) into url.Values.
 
