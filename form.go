@@ -13,26 +13,24 @@ const (
 	errorText          = " ERROR:"
 )
 
-var (
-	timeType = reflect.TypeOf(time.Time{})
-)
+var timeType = reflect.TypeOf(time.Time{})
 
-// Mode specifies which mode the form decoder is to run
+// Mode specifies which mode the form decoder is to run.
 type Mode uint8
 
 const (
 
 	// ModeImplicit tries to parse values for all
-	// fields that do not have an ignore '-' tag
+	// fields that do not have an ignore '-' tag.
 	ModeImplicit Mode = iota
 
 	// ModeExplicit only parses values for field with a field tag
-	// and that tag is not the ignore '-' tag, anonymous fields are still parsed
+	// and that tag is not the ignore '-' tag, anonymous fields are still parsed.
 	ModeExplicit
 )
 
 // AnonymousMode specifies how data should be rolled up
-// or separated from anonymous structs
+// or separated from anonymous structs.
 type AnonymousMode uint8
 
 const (

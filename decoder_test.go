@@ -1,6 +1,7 @@
 package form
 
 import (
+	"encoding"
 	"errors"
 	"net/url"
 	"reflect"
@@ -11,25 +12,8 @@ import (
 	. "github.com/stretchr/testify/assert"
 )
 
-// NOTES:
-// - Run "go test" to run tests
-// - Run "gocov test | gocov report" to report on test converage by file
-// - Run "gocov test | gocov annotate -" to report on all code and functions, those ,marked with "MISS" were never called
-//
-// or
-//
-// -- may be a good idea to change to output path to somewherelike /tmp
-// go test -coverprofile cover.out && go tool cover -html=cover.out -o cover.html
-//
-//
-// go test -cpuprofile cpu.out
-// ./validator.test -test.bench=. -test.cpuprofile=cpu.prof
-// go tool pprof validator.test cpu.prof
-//
-//
-// go test -memprofile mem.out
-
 func TestDecoderInt(t *testing.T) {
+	t.Parallel()
 
 	type TestInt struct {
 		Int              int
@@ -149,6 +133,7 @@ func TestDecoderInt(t *testing.T) {
 }
 
 func TestDecoderUint(t *testing.T) {
+	t.Parallel()
 
 	type TestUint struct {
 		Uint              uint
@@ -268,6 +253,7 @@ func TestDecoderUint(t *testing.T) {
 }
 
 func TestDecoderString(t *testing.T) {
+	t.Parallel()
 
 	type TestString struct {
 		String              string
@@ -352,6 +338,7 @@ func TestDecoderString(t *testing.T) {
 }
 
 func TestDecoderFloat(t *testing.T) {
+	t.Parallel()
 
 	type TestFloat struct {
 		Float32              float32
@@ -444,6 +431,7 @@ func TestDecoderFloat(t *testing.T) {
 }
 
 func TestDecoderBool(t *testing.T) {
+	t.Parallel()
 
 	type TestBool struct {
 		Bool              bool
@@ -534,6 +522,7 @@ func TestDecoderBool(t *testing.T) {
 }
 
 func TestDecoderStruct(t *testing.T) {
+	t.Parallel()
 
 	type Phone struct {
 		Number string
@@ -617,13 +606,14 @@ func TestDecoderStruct(t *testing.T) {
 	Equal(t, errs, nil)
 
 	Equal(t, test.Name, "joeybloggs")
+	Equal(t, test.unexposed, "")
 	Equal(t, test.Ignore, "")
 	Equal(t, len(test.Phone), 2)
 	Equal(t, test.Phone[0].Number, "1(111)111-1111")
 	Equal(t, test.Phone[1].Number, "9(999)999-9999")
 	Equal(t, len(test.PhonePtr), 2)
-	Equal(t, (*test.PhonePtr[0]).Number, "1(111)111-1111")
-	Equal(t, (*test.PhonePtr[1]).Number, "9(999)999-9999")
+	Equal(t, test.PhonePtr[0].Number, "1(111)111-1111")
+	Equal(t, test.PhonePtr[1].Number, "9(999)999-9999")
 	Equal(t, test.NonNilPtr.Number, "9(999)999-9999")
 	Equal(t, test.Anonymous.Value, "Anon")
 	Equal(t, len(test.ExistingMap), 2)
@@ -666,7 +656,7 @@ func TestDecoderStruct(t *testing.T) {
 
 	tm, _ := time.Parse("2006-01-02", "2016-01-02")
 	Equal(t, test.Time.Equal(tm), true)
-	Equal(t, (*test.TimePtr).Equal(tm), true)
+	Equal(t, test.TimePtr.Equal(tm), true)
 
 	NotEqual(t, test.TimeMapKey, nil)
 	Equal(t, len(test.TimeMapKey), 1)
@@ -688,6 +678,7 @@ func TestDecoderStruct(t *testing.T) {
 }
 
 func TestDecoderNativeTime(t *testing.T) {
+	t.Parallel()
 
 	type TestError struct {
 		Time        time.Time
@@ -712,10 +703,11 @@ func TestDecoderNativeTime(t *testing.T) {
 	Equal(t, test.TimeNoValue.IsZero(), true)
 
 	NotEqual(t, test.TimePtr, nil)
-	Equal(t, (*test.TimePtr).Equal(tm), true)
+	Equal(t, test.TimePtr.Equal(tm), true)
 }
 
 func TestDecoderErrors(t *testing.T) {
+	t.Parallel()
 
 	type TestError struct {
 		Bool                  bool `form:"bool"`
@@ -790,7 +782,7 @@ func TestDecoderErrors(t *testing.T) {
 	decoder := NewDecoder()
 	decoder.SetMaxArraySize(4)
 	decoder.RegisterFunc(func(val string) (interface{}, error) {
-		return nil, errors.New("Bad Type Conversion")
+		return nil, errors.New("bad type conversion")
 	}, "")
 
 	errs := decoder.Decode(&test, values)
@@ -803,88 +795,90 @@ func TestDecoderErrors(t *testing.T) {
 	Equal(t, len(err), 30)
 
 	k := err["bool"]
-	Equal(t, k.Error(), "Invalid Boolean Value 'uh-huh' Type 'bool' Namespace 'bool'")
+	Equal(t, k.Error(), "invalid boolean value 'uh-huh' type 'bool' namespace 'bool'")
 
 	k = err["Int"]
-	Equal(t, k.Error(), "Invalid Integer Value 'bad' Type 'int' Namespace 'Int'")
+	Equal(t, k.Error(), "invalid integer value 'bad' type 'int' namespace 'Int'")
 
 	k = err["Int8"]
-	Equal(t, k.Error(), "Invalid Integer Value 'bad' Type 'int8' Namespace 'Int8'")
+	Equal(t, k.Error(), "invalid integer value 'bad' type 'int8' namespace 'Int8'")
 
 	k = err["Int16"]
-	Equal(t, k.Error(), "Invalid Integer Value 'bad' Type 'int16' Namespace 'Int16'")
+	Equal(t, k.Error(), "invalid integer value 'bad' type 'int16' namespace 'Int16'")
 
 	k = err["Int32"]
-	Equal(t, k.Error(), "Invalid Integer Value 'bad' Type 'int32' Namespace 'Int32'")
+	Equal(t, k.Error(), "invalid integer value 'bad' type 'int32' namespace 'Int32'")
 
 	k = err["Uint"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'bad' Type 'uint' Namespace 'Uint'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'bad' type 'uint' namespace 'Uint'")
 
 	k = err["Uint8"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'bad' Type 'uint8' Namespace 'Uint8'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'bad' type 'uint8' namespace 'Uint8'")
 
 	k = err["Uint16"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'bad' Type 'uint16' Namespace 'Uint16'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'bad' type 'uint16' namespace 'Uint16'")
 
 	k = err["Uint32"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'bad' Type 'uint32' Namespace 'Uint32'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'bad' type 'uint32' namespace 'Uint32'")
 
 	k = err["Float32"]
-	Equal(t, k.Error(), "Invalid Float Value 'bad' Type 'float32' Namespace 'Float32'")
+	Equal(t, k.Error(), "invalid float value 'bad' type 'float32' namespace 'Float32'")
 
 	k = err["Float64"]
-	Equal(t, k.Error(), "Invalid Float Value 'bad' Type 'float64' Namespace 'Float64'")
+	Equal(t, k.Error(), "invalid float value 'bad' type 'float64' namespace 'Float64'")
 
 	k = err["String"]
-	Equal(t, k.Error(), "Bad Type Conversion")
+	Equal(t, k.Error(), "bad type conversion")
 
 	k = err["Time"]
 	Equal(t, k.Error(), "parsing time \"bad\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"bad\" as \"2006\"")
 
 	k = err["MapBadIntKey"]
-	Equal(t, k.Error(), "Invalid Integer Value 'key' Type 'int' Namespace 'MapBadIntKey'")
+	Equal(t, k.Error(), "invalid integer value 'key' type 'int' namespace 'MapBadIntKey'")
 
 	k = err["MapBadInt8Key"]
-	Equal(t, k.Error(), "Invalid Integer Value 'key' Type 'int8' Namespace 'MapBadInt8Key'")
+	Equal(t, k.Error(), "invalid integer value 'key' type 'int8' namespace 'MapBadInt8Key'")
 
 	k = err["MapBadInt16Key"]
-	Equal(t, k.Error(), "Invalid Integer Value 'key' Type 'int16' Namespace 'MapBadInt16Key'")
+	Equal(t, k.Error(), "invalid integer value 'key' type 'int16' namespace 'MapBadInt16Key'")
 
 	k = err["MapBadInt32Key"]
-	Equal(t, k.Error(), "Invalid Integer Value 'key' Type 'int32' Namespace 'MapBadInt32Key'")
+	Equal(t, k.Error(), "invalid integer value 'key' type 'int32' namespace 'MapBadInt32Key'")
 
 	k = err["MapBadUintKey"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'key' Type 'uint' Namespace 'MapBadUintKey'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'key' type 'uint' namespace 'MapBadUintKey'")
 
 	k = err["MapBadUint8Key"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'key' Type 'uint8' Namespace 'MapBadUint8Key'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'key' type 'uint8' namespace 'MapBadUint8Key'")
 
 	k = err["MapBadUint16Key"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'key' Type 'uint16' Namespace 'MapBadUint16Key'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'key' type 'uint16' namespace 'MapBadUint16Key'")
 
 	k = err["MapBadUint32Key"]
-	Equal(t, k.Error(), "Invalid Unsigned Integer Value 'key' Type 'uint32' Namespace 'MapBadUint32Key'")
+	Equal(t, k.Error(), "invalid unsigned integer value 'key' type 'uint32' namespace 'MapBadUint32Key'")
 
 	k = err["MapBadFloat32Key"]
-	Equal(t, k.Error(), "Invalid Float Value 'key' Type 'float32' Namespace 'MapBadFloat32Key'")
+	Equal(t, k.Error(), "invalid float value 'key' type 'float32' namespace 'MapBadFloat32Key'")
 
 	k = err["MapBadFloat64Key"]
-	Equal(t, k.Error(), "Invalid Float Value 'key' Type 'float64' Namespace 'MapBadFloat64Key'")
+	Equal(t, k.Error(), "invalid float value 'key' type 'float64' namespace 'MapBadFloat64Key'")
 
 	k = err["MapBadBoolKey"]
-	Equal(t, k.Error(), "Invalid Boolean Value 'uh-huh' Type 'bool' Namespace 'MapBadBoolKey'")
+	Equal(t, k.Error(), "invalid boolean value 'uh-huh' type 'bool' namespace 'MapBadBoolKey'")
 
 	k = err["MapBadKeyType"]
-	Equal(t, k.Error(), "Unsupported Map Key '1.4', Type 'complex64' Namespace 'MapBadKeyType'")
+	Equal(t, k.Error(), "unsupported map key '1.4' type 'complex64' namespace 'MapBadKeyType'")
 
 	k = err["BadArrayValue[0]"]
-	Equal(t, k.Error(), "Invalid Integer Value 'badintval' Type 'int' Namespace 'BadArrayValue[0]'")
+	Equal(t, k.Error(), "invalid integer value 'badintval' type 'int' namespace 'BadArrayValue[0]'")
 
 	k = err["OverflowNilArray"]
-	Equal(t, k.Error(), "Array size of '1000' is larger than the maximum currently set on the decoder of '4'. To increase this limit please see, SetMaxArraySize(size uint)")
+	Equal(t, k.Error(), "array size of '1000' is larger than the maximum currently set on the decoder of '4', "+
+		"see SetMaxArraySize(size uint)")
 
 	k = err["OverFlowExistingArray"]
-	Equal(t, k.Error(), "Array size of '1000' is larger than the maximum currently set on the decoder of '4'. To increase this limit please see, SetMaxArraySize(size uint)")
+	Equal(t, k.Error(), "array size of '1000' is larger than the maximum currently set on the decoder of '4', "+
+		"see SetMaxArraySize(size uint)")
 
 	k = err["BadArrayIndex"]
 	Equal(t, k.Error(), "invalid slice index 'bad index'")
@@ -897,8 +891,11 @@ func TestDecoderErrors(t *testing.T) {
 		"BadMapKey[badtime]": []string{"badtime"},
 	}
 
-	var test2 TestError2
-	decoder2 := NewDecoder()
+	var (
+		test2    TestError2
+		decoder2 = NewDecoder()
+	)
+
 	decoder2.RegisterFunc(func(val string) (interface{}, error) {
 		return time.Parse("2006-01-02", val)
 	}, time.Time{})
@@ -910,10 +907,11 @@ func TestDecoderErrors(t *testing.T) {
 	NotEqual(t, e, "")
 
 	k = err["BadMapKey"]
-	Equal(t, k.Error(), "Unsupported Map Key 'badtime', Type 'time.Time' Namespace 'BadMapKey'")
+	Equal(t, k.Error(), "unsupported map key 'badtime' type 'time.Time' namespace 'BadMapKey'")
 }
 
 func TestDecodeAllTypes(t *testing.T) {
+	t.Parallel()
 
 	values := url.Values{
 		"": []string{"3"},
@@ -1137,6 +1135,7 @@ func TestDecodeAllTypes(t *testing.T) {
 }
 
 func TestDecoderPanicsAndBadValues(t *testing.T) {
+	t.Parallel()
 
 	type Phone struct {
 		Number string
@@ -1156,7 +1155,8 @@ func TestDecoderPanicsAndBadValues(t *testing.T) {
 
 	decoder := NewDecoder()
 
-	PanicsWithValue(t, "Invalid formatting for key 'Phone[0.Number' missing ']' bracket", func() { decoder.Decode(&test, values) })
+	PanicsWithValue(t, "invalid formatting for key 'Phone[0.Number' missing ']' bracket",
+		func() { _ = decoder.Decode(&test, values) })
 
 	i := 1
 	err := decoder.Decode(i, values)
@@ -1186,22 +1186,26 @@ func TestDecoderPanicsAndBadValues(t *testing.T) {
 		"Phone0].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "Invalid formatting for key 'Phone0].Number' missing '[' bracket", func() { decoder.Decode(&test, values) })
+	PanicsWithValue(t, "invalid formatting for key 'Phone0].Number' missing '[' bracket",
+		func() { _ = decoder.Decode(&test, values) })
 
 	values = url.Values{
 		"Phone[[0.Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "Invalid formatting for key 'Phone[[0.Number' missing ']' bracket", func() { decoder.Decode(&test, values) })
+	PanicsWithValue(t, "invalid formatting for key 'Phone[[0.Number' missing ']' bracket",
+		func() { _ = decoder.Decode(&test, values) })
 
 	values = url.Values{
 		"Phone0]].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "Invalid formatting for key 'Phone0]].Number' missing '[' bracket", func() { decoder.Decode(&test, values) })
+	PanicsWithValue(t, "invalid formatting for key 'Phone0]].Number' missing '[' bracket",
+		func() { _ = decoder.Decode(&test, values) })
 }
 
 func TestDecoderMapKeys(t *testing.T) {
+	t.Parallel()
 
 	type TestMapKeys struct {
 		MapIfaceKey   map[interface{}]string
@@ -1252,6 +1256,7 @@ func TestDecoderMapKeys(t *testing.T) {
 }
 
 func TestDecoderStructRecursion(t *testing.T) {
+	t.Parallel()
 
 	type Nested struct {
 		Value  string
@@ -1277,6 +1282,7 @@ func TestDecoderStructRecursion(t *testing.T) {
 }
 
 func TestDecoderFormDecode(t *testing.T) {
+	t.Parallel()
 
 	type Struct2 struct {
 		Foo string
@@ -1310,6 +1316,7 @@ func TestDecoderFormDecode(t *testing.T) {
 }
 
 func TestDecoderArrayKeysSort(t *testing.T) {
+	t.Parallel()
 
 	type Struct struct {
 		Array []int
@@ -1334,6 +1341,7 @@ func TestDecoderArrayKeysSort(t *testing.T) {
 }
 
 func TestDecoderIncreasingKeys(t *testing.T) {
+	t.Parallel()
 
 	type Struct struct {
 		Array []int
@@ -1366,6 +1374,7 @@ func TestDecoderIncreasingKeys(t *testing.T) {
 }
 
 func TestDecoderInterface(t *testing.T) {
+	t.Parallel()
 
 	var iface interface{}
 
@@ -1419,6 +1428,7 @@ func TestDecoderInterface(t *testing.T) {
 }
 
 func TestDecoderPointerToPointer(t *testing.T) {
+	t.Parallel()
 
 	values := map[string][]string{
 		"Value": {"testVal"},
@@ -1437,6 +1447,7 @@ func TestDecoderPointerToPointer(t *testing.T) {
 }
 
 func TestDecoderExplicit(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		Name string `form:"Name"`
@@ -1460,6 +1471,8 @@ func TestDecoderExplicit(t *testing.T) {
 }
 
 func TestDecoderStructWithJSONTag(t *testing.T) {
+	t.Parallel()
+
 	type Test struct {
 		Name string `json:"name,omitempty"`
 		Age  int    `json:",omitempty"`
@@ -1482,6 +1495,7 @@ func TestDecoderStructWithJSONTag(t *testing.T) {
 }
 
 func TestDecoderRegisterTagNameFunc(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		Value  string `json:"val,omitempty"`
@@ -1513,6 +1527,7 @@ func TestDecoderRegisterTagNameFunc(t *testing.T) {
 }
 
 func TestDecoderEmbedModes(t *testing.T) {
+	t.Parallel()
 
 	type A struct {
 		Field string
@@ -1548,6 +1563,7 @@ func TestDecoderEmbedModes(t *testing.T) {
 }
 
 func TestInterfaceDecoding(t *testing.T) {
+	t.Parallel()
 
 	type Test struct {
 		Iface interface{}
@@ -1566,6 +1582,8 @@ func TestInterfaceDecoding(t *testing.T) {
 }
 
 func TestDecodeArrayBug(t *testing.T) {
+	t.Parallel()
+
 	var data struct {
 		A [2]string
 		B [2]string
@@ -1575,6 +1593,7 @@ func TestDecodeArrayBug(t *testing.T) {
 		F [3]string
 		G [3]string
 	}
+
 	decoder := NewDecoder()
 	err := decoder.Decode(&data, url.Values{
 		// Mixed types
@@ -1616,13 +1635,17 @@ func TestDecodeArrayBug(t *testing.T) {
 }
 
 func TestDecodeWithGoValuesCollection(t *testing.T) {
+	t.Parallel()
+
 	type EmbeddedName struct {
 		Name string `form:"name"`
 	}
+
 	var data struct {
 		EmbeddedName
 		Age int `form:"age"`
 	}
+
 	decoder := NewDecoder()
 	goValues := make(map[string]interface{})
 	err := decoder.Decode(&data, url.Values{
@@ -1639,13 +1662,17 @@ func TestDecodeWithGoValuesCollection(t *testing.T) {
 }
 
 func TestDecodeWithCollectionFormat(t *testing.T) {
+	t.Parallel()
+
 	type EmbeddedName struct {
 		Names []string `form:"names" collectionFormat:"csv"`
 	}
+
 	var data struct {
 		EmbeddedName
 		Age int `form:"age"`
 	}
+
 	decoder := NewDecoder()
 	goValues := make(map[string]interface{})
 	err := decoder.Decode(&data, url.Values{
@@ -1662,13 +1689,17 @@ func TestDecodeWithCollectionFormat(t *testing.T) {
 }
 
 func TestDecodeMissingDataWithCollectionFormat(t *testing.T) {
+	t.Parallel()
+
 	type EmbeddedName struct {
 		Names []string `form:"names" collectionFormat:"csv"`
 	}
+
 	var data struct {
 		EmbeddedName
 		Age int `form:"age"`
 	}
+
 	decoder := NewDecoder()
 	goValues := make(map[string]interface{})
 	err := decoder.Decode(&data, url.Values{
@@ -1682,10 +1713,16 @@ func TestDecodeMissingDataWithCollectionFormat(t *testing.T) {
 	})
 }
 
+var (
+	_ encoding.TextMarshaler   = new(textMarshaler)
+	_ encoding.TextUnmarshaler = new(textMarshaler)
+)
+
 type textMarshaler string
 
 func (c *textMarshaler) UnmarshalText(s []byte) error {
 	*c = textMarshaler("unmarshaled:" + string(s))
+
 	return nil
 }
 
@@ -1694,24 +1731,31 @@ func (c textMarshaler) MarshalText() (text []byte, err error) {
 }
 
 func TestDecoder_Decode_textUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	var data struct {
 		Value textMarshaler `form:"value"`
 	}
+
 	decoder := NewDecoder()
 	goValues := make(map[string]interface{})
 	err := decoder.Decode(&data, url.Values{
 		"value": {"abc"},
 	}, goValues)
+
 	Equal(t, err, nil)
 	Equal(t, string(data.Value), "unmarshaled:abc")
 }
 
 func TestDecodeWithCustomFunc(t *testing.T) {
+	t.Parallel()
+
 	type name string
 
 	type EmbeddedName struct {
 		Names []name `form:"names"`
 	}
+
 	var data struct {
 		EmbeddedName
 		Age int `form:"age"`
@@ -1737,6 +1781,8 @@ func TestDecodeWithCustomFunc(t *testing.T) {
 }
 
 func TestDecoder_RegisterCustomTypeFuncOnSlice(t *testing.T) {
+	t.Parallel()
+
 	type customString string
 
 	type TestStruct struct {
@@ -1754,29 +1800,13 @@ func TestDecoder_RegisterCustomTypeFuncOnSlice(t *testing.T) {
 	Equal(t, v.Slice, []customString{"customv1", "customv2"})
 }
 
-func TestDecoder_RegisterCustomTypeFunc(t *testing.T) {
-	type customString string
-
-	type TestStruct struct {
-		Slice []customString `form:"slice"`
-	}
-
-	d := NewDecoder()
-	d.RegisterCustomTypeFunc(func(vals []string) (i interface{}, e error) {
-		return customString("custom" + vals[0]), nil
-	}, customString(""))
-
-	var v TestStruct
-	err := d.Decode(&v, url.Values{"slice": []string{"v1", "v2"}})
-	Equal(t, err, nil)
-
-	Equal(t, v.Slice, []customString{"customv1", "customv2"})
-}
-
 func TestDecoder_EmptyArrayString(t *testing.T) {
+	t.Parallel()
+
 	type T1 struct {
 		F1 string `form:"F1"`
 	}
+
 	in := url.Values{
 		"F1": []string{},
 	}
@@ -1789,9 +1819,12 @@ func TestDecoder_EmptyArrayString(t *testing.T) {
 }
 
 func TestDecoder_EmptyArrayBool(t *testing.T) {
+	t.Parallel()
+
 	type T1 struct {
 		F1 bool `form:"F1"`
 	}
+
 	in := url.Values{
 		"F1": []string{},
 	}

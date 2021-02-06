@@ -34,14 +34,12 @@ func getUserStruct() *User {
 	}
 }
 
-//BenchmarkSimpleUserDecodeStruct-4   	 3000000	       357 ns/op	      64 B/op	       1 allocs/op
-// BenchmarkSimpleUserDecodeStruct-4   	 5000000	       272 ns/op	      64 B/op	       1 allocs/op
 func BenchmarkSimpleUserDecodeStruct(b *testing.B) {
-
 	values := getUserStructValues()
 	decoder := form.NewDecoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		var test User
 		if err := decoder.Decode(&test, values); err != nil {
@@ -51,7 +49,6 @@ func BenchmarkSimpleUserDecodeStruct(b *testing.B) {
 }
 
 func BenchmarkSimpleUserDecodeStructParallel(b *testing.B) {
-
 	values := getUserStructValues()
 	decoder := form.NewDecoder()
 
@@ -65,12 +62,13 @@ func BenchmarkSimpleUserDecodeStructParallel(b *testing.B) {
 		}
 	})
 }
-func BenchmarkSimpleUserEncodeStruct(b *testing.B) {
 
+func BenchmarkSimpleUserEncodeStruct(b *testing.B) {
 	test := getUserStruct()
 	encoder := form.NewEncoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		if _, err := encoder.Encode(&test); err != nil {
 			b.Error(err)
@@ -79,7 +77,6 @@ func BenchmarkSimpleUserEncodeStruct(b *testing.B) {
 }
 
 func BenchmarkSimpleUserEncodeStructParallel(b *testing.B) {
-
 	test := getUserStruct()
 	encoder := form.NewEncoder()
 
@@ -155,6 +152,7 @@ func BenchmarkPrimitivesDecodeStructAllPrimitivesTypes(b *testing.B) {
 	decoder := form.NewDecoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		var test PrimitivesStruct
 		if err := decoder.Decode(&test, values); err != nil {
@@ -183,6 +181,7 @@ func BenchmarkPrimitivesEncodeStructAllPrimitivesTypes(b *testing.B) {
 	encoder := form.NewEncoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		if _, err := encoder.Encode(&test); err != nil {
 			b.Error(err)
@@ -267,7 +266,6 @@ func getComplexArrayStructValues() url.Values {
 }
 
 func getComplexArrayStruct() *ComplexArrayStruct {
-
 	s := "joeybloggs"
 
 	i1 := int(1)
@@ -325,6 +323,7 @@ func BenchmarkComplexArrayDecodeStructAllTypes(b *testing.B) {
 	decoder := form.NewDecoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		var test ComplexArrayStruct
 		if err := decoder.Decode(&test, values); err != nil {
@@ -353,6 +352,7 @@ func BenchmarkComplexArrayEncodeStructAllTypes(b *testing.B) {
 	encoder := form.NewEncoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		if _, err := encoder.Encode(&test); err != nil {
 			b.Error(err)
@@ -433,7 +433,6 @@ func getComplexMapStructValues() url.Values {
 }
 
 func getComplexMapStruct() *ComplexMapStruct {
-
 	key := "key"
 	val := "value"
 
@@ -494,6 +493,7 @@ func BenchmarkComplexMapDecodeStructAllTypes(b *testing.B) {
 	decoder := form.NewDecoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		var test ComplexMapStruct
 		if err := decoder.Decode(&test, values); err != nil {
@@ -522,6 +522,7 @@ func BenchmarkComplexMapEncodeStructAllTypes(b *testing.B) {
 	encoder := form.NewEncoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		if _, err := encoder.Encode(&test); err != nil {
 			b.Error(err)
@@ -578,7 +579,6 @@ func getNestedStructValues() url.Values {
 }
 
 func getNestedStruct() *NestedStruct {
-
 	nested := Nested{
 		Value: "value",
 	}
@@ -597,11 +597,11 @@ func getNestedStruct() *NestedStruct {
 }
 
 func BenchmarkDecodeNestedStruct(b *testing.B) {
-
 	values := getNestedStructValues()
 	decoder := form.NewDecoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		var test NestedStruct
 		if err := decoder.Decode(&test, values); err != nil {
@@ -611,7 +611,6 @@ func BenchmarkDecodeNestedStruct(b *testing.B) {
 }
 
 func BenchmarkDecodeNestedStructParallel(b *testing.B) {
-
 	values := getNestedStructValues()
 	decoder := form.NewDecoder()
 
@@ -627,11 +626,11 @@ func BenchmarkDecodeNestedStructParallel(b *testing.B) {
 }
 
 func BenchmarkEncodeNestedStruct(b *testing.B) {
-
 	test := getNestedStruct()
 	encoder := form.NewEncoder()
 
 	b.ReportAllocs()
+
 	for n := 0; n < b.N; n++ {
 		if _, err := encoder.Encode(&test); err != nil {
 			b.Error(err)
@@ -640,7 +639,6 @@ func BenchmarkEncodeNestedStruct(b *testing.B) {
 }
 
 func BenchmarkEncodeNestedStructParallel(b *testing.B) {
-
 	test := getNestedStruct()
 	encoder := form.NewEncoder()
 
