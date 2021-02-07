@@ -178,9 +178,6 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 			}
 
 			set = true
-		} else {
-			println("A")
-			d.setFieldByType(v.Field(f.idx), namespace, 0)
 		}
 	}
 
@@ -206,6 +203,27 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 				return true
 			}
 		}
+	}
+
+	if v.Type() == timeType {
+		if !ok || len(arr[idx]) == 0 {
+			return false
+		}
+
+		if len(arr[idx]) == 0 {
+			return false
+		}
+
+		t, err := time.Parse(time.RFC3339, arr[idx])
+		if err != nil {
+			d.setError(namespace, err)
+
+			return false
+		}
+
+		v.Set(reflect.ValueOf(t))
+
+		return true
 	}
 
 	if ok {
@@ -684,32 +702,14 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		return true
 
 	case reflect.Struct:
-		typ := v.Type()
-
-		// if we get here then no custom time function declared so use RFC3339 by default
-		if typ == timeType {
-			if !ok || len(arr[idx]) == 0 {
-				return false
-			}
-
-			t, err := time.Parse(time.RFC3339, arr[idx])
-			if err != nil {
-				d.setError(namespace, err)
-			}
-
-			v.Set(reflect.ValueOf(t))
-
-			return true
-		}
-
 		d.parseMapData()
 
-		// we must be recursing infinitly...but that's ok we caught it on the very first overun.
+		// we must be recursing infinitely...but that's ok we caught it on the very first overrun.
 		if len(namespace) > d.maxKeyLen {
 			return false
 		}
 
-		return d.traverseStruct(v, typ, namespace)
+		return d.traverseStruct(v, v.Type(), namespace)
 	}
 
 	return false

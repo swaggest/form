@@ -74,19 +74,17 @@ func (s *structCacheMap) Set(key reflect.Type, value *cachedStruct) {
 
 func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key reflect.Type, tagName string) *cachedStruct {
 	s.lock.Lock()
+	defer s.lock.Unlock()
 
 	// could have been multiple trying to access, but once first is done this ensures struct
 	// isn't parsed again.
 	cs, ok := s.Get(key)
 	if ok {
-		s.lock.Unlock()
-
 		return cs
 	}
 
 	typ := current.Type()
-	// init 4, betting most structs decoding into have at least 4 fields.
-	cs = &cachedStruct{fields: make([]cachedField, 0, 4)}
+	cs = &cachedStruct{}
 
 	numFields := current.NumField()
 
@@ -153,8 +151,6 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 	}
 
 	s.Set(typ, cs)
-
-	s.lock.Unlock()
 
 	return cs
 }
