@@ -1,6 +1,6 @@
 Package form
 ============
-[![Build Status](https://github.com/swaggest/form/workflows/test/badge.svg)](https://github.com/swaggest/form/actions?query=branch%3Amaster+workflow%3Atest)
+[![Build Status](https://github.com/swaggest/form/workflows/test-unit/badge.svg)](https://github.com/swaggest/form/actions?query=branch%3Amaster+workflow%3Atest-unit)
 [![Coverage Status](https://codecov.io/gh/swaggest/form/branch/master/graph/badge.svg)](https://codecov.io/gh/swaggest/form)
 [![GoDevDoc](https://img.shields.io/badge/dev-doc-00ADD8?logo=go)](https://pkg.go.dev/github.com/swaggest/form)
 
