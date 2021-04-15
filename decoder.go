@@ -154,7 +154,7 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 		namespace = namespace[:l]
 
 		if f.isAnonymous {
-			if d.setFieldByType(v.Field(f.idx), namespace, 0) {
+			if d.setFieldByType(v.Field(f.idx), false, namespace, 0) {
 				set = true
 			}
 		}
@@ -172,7 +172,7 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 			}
 		}
 
-		if d.setFieldByType(v.Field(f.idx), namespace, 0) {
+		if d.setFieldByType(v.Field(f.idx), false, namespace, 0) {
 			if d.goValues != nil {
 				d.goValues[f.name] = v.Field(f.idx).Interface()
 			}
@@ -184,7 +184,7 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 	return set
 }
 
-func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx int) bool {
+func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []byte, idx int) bool {
 	v, kind := ExtractType(current)
 	arr, ok := d.values[string(namespace)]
 
@@ -250,7 +250,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 
 	case reflect.Ptr:
 		newVal := reflect.New(v.Type().Elem())
-		if set := d.setFieldByType(newVal.Elem(), namespace, idx); set {
+		if set := d.setFieldByType(newVal.Elem(), true, namespace, idx); set {
 			v.Set(newVal)
 
 			return set
@@ -436,7 +436,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		return true
 
 	case reflect.Bool:
-		if !ok || idx == len(arr) {
+		if !ok || idx == len(arr) || (isPtr && arr[idx] == "") {
 			return false
 		}
 
@@ -483,7 +483,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			for i := ol; i < l; i++ {
 				newVal := reflect.New(v.Type().Elem()).Elem()
 
-				if d.setFieldByType(newVal, namespace, i-ol) {
+				if d.setFieldByType(newVal, false, namespace, i-ol) {
 					set = true
 
 					varr.Index(i).Set(newVal)
@@ -543,7 +543,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 					continue
 				}
 
-				if d.setFieldByType(newVal, append(namespace, kv.searchValue...), 0) {
+				if d.setFieldByType(newVal, false, append(namespace, kv.searchValue...), 0) {
 					set = true
 
 					varr.Index(kv.ivalue).Set(newVal)
@@ -589,7 +589,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			for i := 0; i < l; i++ {
 				newVal := reflect.New(v.Type().Elem()).Elem()
 
-				if d.setFieldByType(newVal, namespace, i) {
+				if d.setFieldByType(newVal, false, namespace, i) {
 					set = true
 
 					varr.Index(i).Set(newVal)
@@ -629,7 +629,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 					continue
 				}
 
-				if d.setFieldByType(newVal, append(namespace, kv.searchValue...), 0) {
+				if d.setFieldByType(newVal, false, append(namespace, kv.searchValue...), 0) {
 					set = true
 
 					varr.Index(kv.ivalue).Set(newVal)
@@ -686,7 +686,7 @@ func (d *decoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 				continue
 			}
 
-			if d.setFieldByType(newVal, append(namespace, kv.searchValue...), 0) {
+			if d.setFieldByType(newVal, false, append(namespace, kv.searchValue...), 0) {
 				set = true
 
 				mp.SetMapIndex(mk, newVal)

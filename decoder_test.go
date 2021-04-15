@@ -476,8 +476,7 @@ func TestDecoderBool(t *testing.T) {
 
 	Equal(t, *test.BoolPtr, true)
 	Nil(t, test.BoolPtrNil)
-	NotEqual(t, test.BoolPtrEmpty, nil)
-	Equal(t, *test.BoolPtrEmpty, false)
+	Nil(t, test.BoolPtrEmpty, nil)
 
 	Equal(t, len(test.BoolArray), 7)
 	Equal(t, test.BoolArray[0], false)
