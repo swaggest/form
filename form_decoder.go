@@ -156,16 +156,15 @@ func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...ma
 	dec.dm = dec.dm[0:0]
 
 	val = val.Elem()
-	typ := val.Type()
 
-	if val.Kind() == reflect.Struct && typ != timeType {
+	if typ := val.Type(); val.Kind() == reflect.Struct && typ != timeType {
 		if len(collectGoValues) > 0 {
 			dec.goValues = collectGoValues[0]
 		}
 
 		dec.traverseStruct(val, typ, dec.namespace[0:0])
 	} else {
-		dec.setFieldByType(val, dec.namespace[0:0], 0)
+		dec.setFieldByType(val, false, dec.namespace[0:0], 0)
 	}
 
 	var err error

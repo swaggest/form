@@ -1,7 +1,6 @@
 # See https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
 run:
   tests: true
-  deadline: 5m
 
 linters-settings:
   errcheck:
@@ -32,6 +31,11 @@ linters:
     - gocyclo
     - gomnd
     - forbidigo
+    - forcetypeassert
+    - exhaustivestruct
+    - cyclop
+    - maligned
+    - interfacer
 
 issues:
   exclude-use-default: false
