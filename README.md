@@ -59,7 +59,7 @@ Use go get.
 
 Then import the form package into your own code.
 
-	import "github.com/swaggest/form/v4"
+	import "github.com/swaggest/form/v5"
     
 Usage
 -----
@@ -96,7 +96,7 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/swaggest/form/v4"
+	"github.com/swaggest/form/v5"
 )
 
 // Address contains address information
@@ -163,7 +163,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/swaggest/form/v4"
+	"github.com/swaggest/form/v5"
 )
 
 // Address contains address information

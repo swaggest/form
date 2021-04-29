@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/url"
 
-	"github.com/swaggest/form/v4"
+	"github.com/swaggest/form/v5"
 )
 
 // A ...
