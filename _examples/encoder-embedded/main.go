@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/swaggest/form"
+	"github.com/swaggest/form/v4"
 )
 
 // A ...

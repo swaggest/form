@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/swaggest/form"
+	"github.com/swaggest/form/v4"
 )
 
 // Simple Benchmarks
