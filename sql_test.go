@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	assert "github.com/stretchr/testify/assert"
-	"github.com/swaggest/form/v4"
+	"github.com/swaggest/form/v5"
 )
 
 type TestNullTypes struct {
