@@ -1,8 +1,8 @@
-module github.com/swaggest/form
+module github.com/swaggest/form/v4
 
 go 1.13
 
 require (
-	github.com/bool64/dev v0.1.25
+	github.com/bool64/dev v0.1.27
 	github.com/stretchr/testify v1.4.0
 )

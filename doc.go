@@ -91,7 +91,7 @@ example decoding the above HTML
         "log"
         "net/url"
 
-        "github.com/swaggest/form"
+        "github.com/swaggest/form/v4"
     )
 
     // Address contains address information
@@ -157,7 +157,7 @@ example encoding
         "fmt"
         "log"
 
-        "github.com/swaggest/form"
+        "github.com/swaggest/form/v4"
     )
 
     // Address contains address information

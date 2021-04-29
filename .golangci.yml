@@ -20,22 +20,26 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - testpackage
-    - wrapcheck
-    - goerr113
-    - gochecknoglobals
-    - exhaustive
-    - nestif
-    - funlen
-    - gocognit
     - gocyclo
-    - gomnd
-    - forbidigo
-    - forcetypeassert
-    - exhaustivestruct
+    - gocognit
+    - funlen
+    - nestif
     - cyclop
+    - exhaustive
+    - goerr113
+    - errorlint
+    - lll
     - maligned
-    - interfacer
+    - gochecknoglobals
+    - gomnd
+    - wrapcheck
+    - paralleltest
+    - forbidigo
+    - exhaustivestruct
+    - interfacer # deprecated
+    - forcetypeassert
+    - scopelint # deprecated
+    - ifshort # too many false positives
 
 issues:
   exclude-use-default: false
@@ -43,11 +47,11 @@ issues:
     - linters:
         - gomnd
         - goconst
-        - exhaustivestruct
-        - maligned
         - goerr113
-        - errorlint
+        - noctx
         - funlen
-        - errcheck
         - dupl
+        - testpackage
+        - errcheck
       path: "_test.go"
+
