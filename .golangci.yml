@@ -20,6 +20,14 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - gocyclo
+    - gocognit
+    - funlen
+    - nestif
+    - cyclop
+    - exhaustive
+    - goerr113
+    - errorlint
     - lll
     - maligned
     - gochecknoglobals
@@ -43,5 +51,7 @@ issues:
         - noctx
         - funlen
         - dupl
+        - testpackage
+        - errcheck
       path: "_test.go"
 
