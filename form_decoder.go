@@ -174,6 +174,8 @@ func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...ma
 		dec.errs = nil
 	}
 
+	dec.dmDone = false
+
 	d.dataPool.Put(dec)
 
 	return err

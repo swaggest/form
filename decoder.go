@@ -3,7 +3,6 @@ package form
 import (
 	"encoding"
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -22,6 +21,7 @@ type decoder struct {
 	d         *Decoder
 	errs      DecodeErrors
 	dm        dataMap
+	dmDone    bool
 	values    url.Values
 	goValues  map[string]interface{}
 	maxKeyLen int
@@ -46,14 +46,15 @@ func (d *decoder) findAlias(ns string) *recursiveData {
 	return nil
 }
 
-func (d *decoder) parseMapData() {
+func (d *decoder) parseMapData() error {
 	// already parsed
-	if len(d.dm) > 0 {
-		return
+	if d.dmDone {
+		return nil
 	}
 
 	d.maxKeyLen = 0
 	d.dm = d.dm[0:0]
+	d.dmDone = true
 
 	var (
 		i             int
@@ -77,7 +78,7 @@ func (d *decoder) parseMapData() {
 				isNum = true
 			case ']':
 				if !insideBracket {
-					log.Panicf(errMissingStartBracket, k)
+					return fmt.Errorf(errMissingStartBracket, k)
 				}
 
 				if rd = d.findAlias(k[:idx]); rd == nil {
@@ -134,9 +135,11 @@ func (d *decoder) parseMapData() {
 
 		// if still inside bracket, that means no ending bracket was ever specified
 		if insideBracket {
-			log.Panicf(errMissingEndBracket, k)
+			return fmt.Errorf(errMissingEndBracket, k)
 		}
 	}
+
+	return nil
 }
 
 func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []byte) (set bool) {
@@ -453,7 +456,12 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 		return true
 
 	case reflect.Slice:
-		d.parseMapData() // check arr, current
+		// check arr, current
+		if err := d.parseMapData(); err != nil {
+			d.setError(namespace, fmt.Errorf("failed to parse map data: %w", err))
+
+			return false
+		}
 		// slice elements could be mixed eg. number and non-numbers Value[0]=[]string{"10"} and Value=[]string{"10","20"}
 
 		set := false
@@ -562,7 +570,11 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 		return set
 
 	case reflect.Array:
-		d.parseMapData()
+		if err := d.parseMapData(); err != nil {
+			d.setError(namespace, fmt.Errorf("failed to parse map data: %w", err))
+
+			return false
+		}
 
 		// array elements could be mixed eg. number and non-numbers Value[0]=[]string{"10"} and Value=[]string{"10","20"}
 		set := false
@@ -650,7 +662,11 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 	case reflect.Map:
 		var rd *recursiveData
 
-		d.parseMapData()
+		if err := d.parseMapData(); err != nil {
+			d.setError(namespace, fmt.Errorf("failed to parse map data: %w", err))
+
+			return false
+		}
 
 		// no natural map support so skip directly to dm lookup
 		if rd = d.findAlias(string(namespace)); rd == nil {
@@ -702,7 +718,11 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 		return true
 
 	case reflect.Struct:
-		d.parseMapData()
+		if err := d.parseMapData(); err != nil {
+			d.setError(namespace, fmt.Errorf("failed to parse map data: %w", err))
+
+			return false
+		}
 
 		// we must be recursing infinitely...but that's ok we caught it on the very first overrun.
 		if len(namespace) > d.maxKeyLen {
