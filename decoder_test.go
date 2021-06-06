@@ -1133,7 +1133,7 @@ func TestDecodeAllTypes(t *testing.T) {
 	Equal(t, phones[1].Label, "label2")
 }
 
-func TestDecoderPanicsAndBadValues(t *testing.T) {
+func TestDecoderFailsAndBadValues(t *testing.T) {
 	t.Parallel()
 
 	type Phone struct {
@@ -1154,8 +1154,8 @@ func TestDecoderPanicsAndBadValues(t *testing.T) {
 
 	decoder := NewDecoder()
 
-	PanicsWithValue(t, "invalid formatting for key 'Phone[0.Number' missing ']' bracket",
-		func() { _ = decoder.Decode(&test, values) })
+	Equal(t, "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone[0.Number' missing ']' bracket",
+		decoder.Decode(&test, values).Error())
 
 	i := 1
 	err := decoder.Decode(i, values)
@@ -1185,22 +1185,22 @@ func TestDecoderPanicsAndBadValues(t *testing.T) {
 		"Phone0].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "invalid formatting for key 'Phone0].Number' missing '[' bracket",
-		func() { _ = decoder.Decode(&test, values) })
+	Equal(t, "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone0].Number' missing '[' bracket",
+		decoder.Decode(&test, values).Error())
 
 	values = url.Values{
 		"Phone[[0.Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "invalid formatting for key 'Phone[[0.Number' missing ']' bracket",
-		func() { _ = decoder.Decode(&test, values) })
+	Equal(t, "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone[[0.Number' missing ']' bracket",
+		decoder.Decode(&test, values).Error())
 
 	values = url.Values{
 		"Phone0]].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicsWithValue(t, "invalid formatting for key 'Phone0]].Number' missing '[' bracket",
-		func() { _ = decoder.Decode(&test, values) })
+	Equal(t, "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone0]].Number' missing '[' bracket",
+		decoder.Decode(&test, values).Error())
 }
 
 func TestDecoderMapKeys(t *testing.T) {
