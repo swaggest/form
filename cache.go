@@ -146,7 +146,7 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 		}
 
 		cs.fields = append(cs.fields, cachedField{
-			idx: i, name: name, isAnonymous: fld.Anonymous, isExported: fld.IsExported(),
+			idx: i, name: name, isAnonymous: fld.Anonymous, isExported: fld.PkgPath == "",
 			isOmitEmpty: isOmitEmpty, sliceSeparator: sliceSeparator,
 		})
 	}
