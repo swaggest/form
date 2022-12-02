@@ -114,7 +114,7 @@ func (d *decoder) parseMapData() error {
 					// no need to check for error, it will always pass
 					// as we have done the checking to ensure
 					// the value is a number ahead of time.
-					ke.ivalue, _ = strconv.Atoi(ke.value) // nolint:errcheck
+					ke.ivalue, _ = strconv.Atoi(ke.value) //nolint:errcheck
 
 					if ke.ivalue > rd.sliceLen {
 						rd.sliceLen = ke.ivalue
@@ -187,6 +187,7 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 	return set
 }
 
+//nolint:maintidx // This function is indeed a bit large, but sequentially structured.
 func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []byte, idx int) bool {
 	v, kind := ExtractType(current)
 	arr, ok := d.values[string(namespace)]

@@ -2,6 +2,7 @@ package form
 
 import (
 	"errors"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -1482,4 +1483,24 @@ func TestEncoder_Encode_collectGoValues(t *testing.T) {
 	Equal(t, goValues["value"], "abc")
 	Equal(t, goValues["num"], 123)
 	Equal(t, goValues["emb"], 1.23)
+}
+
+type deeperEmbedded struct {
+	embeddedUnexported
+}
+
+type embeddedUnexported struct {
+	nothingToSeeHere bool
+}
+
+func (e embeddedUnexported) Write(_ []byte) (n int, err error) {
+	return 0, nil
+}
+
+func (e embeddedUnexported) MarshalText() (text []byte, err error) {
+	return []byte("hello!"), nil
+}
+
+func MakeEmbeddedUnexported() io.Writer {
+	return deeperEmbedded{}
 }

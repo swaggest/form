@@ -8,9 +8,12 @@ import (
 )
 
 // RegisterSQLNullTypesDecodeFunc adds decoding support for sql.Null* types.
-func RegisterSQLNullTypesDecodeFunc(d interface {
-	RegisterFunc(fn DecodeFunc, types ...interface{})
-}, nullValues ...string) {
+func RegisterSQLNullTypesDecodeFunc(
+	d interface {
+		RegisterFunc(fn DecodeFunc, types ...interface{})
+	},
+	nullValues ...string,
+) {
 	if len(nullValues) == 0 {
 		nullValues = []string{"NULL"}
 	}
@@ -75,9 +78,12 @@ func RegisterSQLNullTypesDecodeFunc(d interface {
 }
 
 // RegisterSQLNullTypesEncodeFunc adds encoding support for sql.Null* types.
-func RegisterSQLNullTypesEncodeFunc(e interface {
-	RegisterFunc(fn EncodeFunc, types ...interface{})
-}, nullValue string) {
+func RegisterSQLNullTypesEncodeFunc(
+	e interface {
+		RegisterFunc(fn EncodeFunc, types ...interface{})
+	},
+	nullValue string,
+) {
 	e.RegisterFunc(func(x interface{}) (string, error) {
 		s, ok := x.(sql.NullString)
 		if !ok {

@@ -151,7 +151,7 @@ func (d *Decoder) Decode(v interface{}, values url.Values, collectGoValues ...ma
 		return &InvalidDecoderError{Type: reflect.TypeOf(v)}
 	}
 
-	dec := d.dataPool.Get().(*decoder) // nolint:errcheck
+	dec := d.dataPool.Get().(*decoder) //nolint:errcheck
 	dec.values = values
 	dec.dm = dec.dm[0:0]
 

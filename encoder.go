@@ -57,7 +57,7 @@ func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
 		namespace = namespace[:l]
 
 		if f.isAnonymous && e.e.embedAnonymous {
-			e.setFieldByType(v.Field(f.idx), namespace, idx, f.isOmitEmpty)
+			e.setFieldByType(v.Field(f.idx), namespace, idx, f)
 
 			continue
 		}
@@ -69,7 +69,7 @@ func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
 			namespace = append(namespace, f.name...)
 		}
 
-		e.setFieldByType(v.Field(f.idx), namespace, idx, f.isOmitEmpty)
+		e.setFieldByType(v.Field(f.idx), namespace, idx, f)
 
 		if f.sliceSeparator != 0 {
 			ns := string(namespace)
@@ -80,7 +80,7 @@ func (e *encoder) traverseStruct(v reflect.Value, namespace []byte, idx int) {
 	}
 }
 
-func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx int, isOmitEmpty bool) {
+func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx int, f cachedField) {
 	if idx > -1 && current.Kind() == reflect.Ptr {
 		namespace = append(namespace, '[')
 		namespace = strconv.AppendInt(namespace, int64(idx), 10)
@@ -88,7 +88,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		idx = -2
 	}
 
-	if isOmitEmpty && !hasValue(current) {
+	if f.isOmitEmpty && !hasValue(current) {
 		return
 	}
 
@@ -119,7 +119,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 		}
 	}
 
-	if !(kind == reflect.Ptr && v.IsNil()) {
+	if f.isExported && !(kind == reflect.Ptr && v.IsNil()) {
 		if tu, ok := v.Interface().(encoding.TextMarshaler); ok {
 			val, err := tu.MarshalText()
 			if err != nil {
@@ -165,7 +165,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 	case reflect.Slice, reflect.Array:
 		if idx == -1 {
 			for i := 0; i < v.Len(); i++ {
-				e.setFieldByType(v.Index(i), namespace, i, false)
+				e.setFieldByType(v.Index(i), namespace, i, cachedField{})
 			}
 
 			return
@@ -184,7 +184,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			namespace = namespace[:l]
 			namespace = strconv.AppendInt(namespace, int64(i), 10)
 			namespace = append(namespace, ']')
-			e.setFieldByType(v.Index(i), namespace, -2, false)
+			e.setFieldByType(v.Index(i), namespace, -2, cachedField{})
 		}
 
 	case reflect.Map:
@@ -212,7 +212,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			namespace = append(namespace, s...)
 			namespace = append(namespace, ']')
 
-			e.setFieldByType(current.MapIndex(key), namespace, -2, false)
+			e.setFieldByType(current.MapIndex(key), namespace, -2, cachedField{})
 		}
 
 	case reflect.Struct:
