@@ -122,7 +122,7 @@ func (e *Encoder) Encode(v interface{}, collectGoValues ...map[string]interface{
 		return nil, &InvalidEncodeError{Type: reflect.TypeOf(v)}
 	}
 
-	enc := e.dataPool.Get().(*encoder) // nolint:errcheck
+	enc := e.dataPool.Get().(*encoder) //nolint:errcheck
 	enc.values = make(url.Values)
 
 	if kind == reflect.Struct && val.Type() != timeType {
@@ -132,7 +132,7 @@ func (e *Encoder) Encode(v interface{}, collectGoValues ...map[string]interface{
 
 		enc.traverseStruct(val, enc.namespace[0:0], -1)
 	} else {
-		enc.setFieldByType(val, enc.namespace[0:0], -1, false)
+		enc.setFieldByType(val, enc.namespace[0:0], -1, cachedField{})
 	}
 
 	if len(enc.errs) > 0 {
@@ -156,14 +156,14 @@ func (e *Encoder) EncodeWithColumns(v interface{}) (values url.Values, columns [
 		return nil, nil, &InvalidEncodeError{Type: reflect.TypeOf(v)}
 	}
 
-	enc := e.dataPool.Get().(*encoder) // nolint:errcheck
+	enc := e.dataPool.Get().(*encoder) //nolint:errcheck
 	enc.values = make(url.Values)
 	enc.columns = make([]string, 0)
 
 	if kind == reflect.Struct && val.Type() != timeType {
 		enc.traverseStruct(val, enc.namespace[0:0], -1)
 	} else {
-		enc.setFieldByType(val, enc.namespace[0:0], -1, false)
+		enc.setFieldByType(val, enc.namespace[0:0], -1, cachedField{})
 	}
 
 	if len(enc.errs) > 0 {

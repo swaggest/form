@@ -29,6 +29,7 @@ type cachedField struct {
 	name           string
 	isAnonymous    bool
 	isOmitEmpty    bool
+	isExported     bool
 	sliceSeparator byte
 }
 
@@ -59,7 +60,7 @@ func (s *structCacheMap) Get(key reflect.Type) (value *cachedStruct, ok bool) {
 }
 
 func (s *structCacheMap) Set(key reflect.Type, value *cachedStruct) {
-	m := s.m.Load().(map[reflect.Type]*cachedStruct) // nolint:errcheck
+	m := s.m.Load().(map[reflect.Type]*cachedStruct) //nolint:errcheck
 
 	nm := make(map[reflect.Type]*cachedStruct, len(m)+1)
 
@@ -145,7 +146,7 @@ func (s *structCacheMap) parseStruct(mode Mode, current reflect.Value, key refle
 		}
 
 		cs.fields = append(cs.fields, cachedField{
-			idx: i, name: name, isAnonymous: fld.Anonymous,
+			idx: i, name: name, isAnonymous: fld.Anonymous, isExported: fld.IsExported(),
 			isOmitEmpty: isOmitEmpty, sliceSeparator: sliceSeparator,
 		})
 	}

@@ -1322,7 +1322,6 @@ func TestDecoderArrayKeysSort(t *testing.T) {
 	}
 
 	values := map[string][]string{
-
 		"Array[2]":  {"2"},
 		"Array[10]": {"10"},
 	}
