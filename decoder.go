@@ -150,13 +150,17 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 	// including tags
 	s, ok := d.d.structCache.Get(typ)
 	if !ok {
-		s = d.d.structCache.parseStruct(d.d.mode, v, typ, d.d.tagName)
+		s = d.d.structCache.parseStruct(d.d.mode, typ, d.d.tagName)
 	}
 
 	for _, f := range s.fields {
+		if !f.canSet {
+			continue
+		}
+
 		namespace = namespace[:l]
 
-		if f.isAnonymous {
+		if f.isAnonymous && f.hasExportedScalar {
 			if d.setFieldByType(v.Field(f.idx), false, namespace, 0) {
 				set = true
 			}
