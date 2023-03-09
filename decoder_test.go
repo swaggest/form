@@ -1769,13 +1769,13 @@ func TestDecodeWithCustomFunc(t *testing.T) {
 		"names": {"John", "Paul", "Ringo", "George"},
 		"age":   {"30"},
 	}, goValues)
-	Equal(t, err, nil)
-	Equal(t, data.Names, []name{"John", "Paul", "Ringo", "George"})
-	Equal(t, data.Age, 30)
-	Equal(t, goValues, map[string]interface{}{
+	NoError(t, err)
+	Equal(t, []name{"John", "Paul", "Ringo", "George"}, data.Names)
+	Equal(t, 30, data.Age)
+	Equal(t, map[string]interface{}{
 		"names": []name{"John", "Paul", "Ringo", "George"},
 		"age":   30,
-	})
+	}, goValues)
 }
 
 func TestDecoder_RegisterCustomTypeFuncOnSlice(t *testing.T) {

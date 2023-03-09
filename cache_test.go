@@ -27,7 +27,7 @@ func TestDecoderMultipleSimultaniousParseStructRequests(t *testing.T) {
 		go func() {
 			<-proceed
 
-			s := sc.parseStruct(ModeImplicit, sv, typ, "form")
+			s := sc.parseStruct(ModeImplicit, typ, "form")
 
 			NotEqual(t, s, nil)
 		}()
