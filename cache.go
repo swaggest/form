@@ -83,7 +83,7 @@ func (s *structCacheMap) parseStruct(mode Mode, typ reflect.Type, tagName string
 	return s.ps(mode, typ, tagName)
 }
 
-func (s *structCacheMap) ps(mode Mode, typ reflect.Type, tagName string) *cachedStruct {
+func (s *structCacheMap) ps(mode Mode, typ reflect.Type, tagName string) (cs *cachedStruct) {
 	// could have been multiple trying to access, but once first is done this ensures struct
 	// isn't parsed again.
 	cs, ok := s.Get(typ)
@@ -92,7 +92,7 @@ func (s *structCacheMap) ps(mode Mode, typ reflect.Type, tagName string) *cached
 	}
 
 	cs = &cachedStruct{}
-	s.Set(typ, cs)
+	defer s.Set(typ, cs)
 
 	if typ.Kind() == reflect.Ptr {
 		s := s.ps(mode, typ.Elem(), tagName)
