@@ -575,8 +575,6 @@ func TestDecoderEqualStructMapValue(t *testing.T) {
 }
 
 func TestDecoderStruct(t *testing.T) {
-	t.Parallel()
-
 	type Phone struct {
 		Number string
 	}
@@ -728,7 +726,7 @@ func TestDecoderStruct(t *testing.T) {
 			Equal(t, errs, nil)
 
 			Equal(t, test.Name, "joeybloggs")
-			//Equal(t, test.unexposed, "")
+			// Equal(t, test.unexposed, "")
 			Equal(t, test.Ignore, "")
 			Equal(t, len(test.Phone), 2)
 			Equal(t, test.Phone[0].Number, "1(111)111-1111")
@@ -847,8 +845,6 @@ func TestDecoderNativeTime(t *testing.T) {
 }
 
 func TestDecoderErrors(t *testing.T) {
-	t.Parallel()
-
 	type TestError struct {
 		Bool                  bool `form:"bool"`
 		Int                   int
@@ -1359,8 +1355,6 @@ func TestDecoderFailsAndBadValues(t *testing.T) {
 }
 
 func TestDecoderMapKeys(t *testing.T) {
-	t.Parallel()
-
 	type TestMapKeys struct {
 		MapIfaceKey   map[interface{}]string
 		MapFloat32Key map[float32]float32
@@ -1432,8 +1426,6 @@ func TestDecoderMapKeys(t *testing.T) {
 }
 
 func TestDecoderStructRecursion(t *testing.T) {
-	t.Parallel()
-
 	type Nested struct {
 		Value  string
 		Nested *Nested
@@ -2056,6 +2048,7 @@ func TestDecoder_InvalidSliceIndex(t *testing.T) {
 	type PostsRequest struct {
 		PostIds []string
 	}
+
 	in := url.Values{
 		"PostIds[]": []string{"1", "2"},
 	}

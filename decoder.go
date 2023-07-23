@@ -115,6 +115,7 @@ func (d *decoder) parseMapData() error {
 					// as we have done the checking to ensure
 					// the value is a number ahead of time.
 					var err error
+
 					ke.ivalue, err = strconv.Atoi(ke.value)
 					if err != nil {
 						ke.ivalue = -1

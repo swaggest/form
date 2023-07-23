@@ -1008,7 +1008,6 @@ func TestEncoderStruct(t *testing.T) {
 }
 
 func TestEncoderStructCustomNamespace(t *testing.T) {
-
 	type Phone struct {
 		Number string
 	}
