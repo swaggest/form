@@ -114,7 +114,12 @@ func (d *decoder) parseMapData() error {
 					// no need to check for error, it will always pass
 					// as we have done the checking to ensure
 					// the value is a number ahead of time.
-					ke.ivalue, _ = strconv.Atoi(ke.value) //nolint:errcheck
+					var err error
+
+					ke.ivalue, err = strconv.Atoi(ke.value)
+					if err != nil {
+						ke.ivalue = -1
+					}
 
 					if ke.ivalue > rd.sliceLen {
 						rd.sliceLen = ke.ivalue
@@ -169,8 +174,9 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 		if first {
 			namespace = append(namespace, f.name...)
 		} else {
-			namespace = append(namespace, namespaceSeparator)
+			namespace = append(namespace, d.d.namespacePrefix...)
 			namespace = append(namespace, f.name...)
+			namespace = append(namespace, d.d.namespaceSuffix...)
 		}
 
 		if f.sliceSeparator != 0 {
@@ -417,7 +423,7 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 		f, err := strconv.ParseFloat(arr[idx], 32)
 		if err != nil {
 			d.setError(namespace, fmt.Errorf("invalid float value '%s' type '%v' namespace '%s'",
-				arr[0], v.Type(), string(namespace)))
+				arr[idx], v.Type(), string(namespace)))
 
 			return false
 		}
@@ -434,7 +440,7 @@ func (d *decoder) setFieldByType(current reflect.Value, isPtr bool, namespace []
 		f, err := strconv.ParseFloat(arr[idx], 64)
 		if err != nil {
 			d.setError(namespace, fmt.Errorf("invalid float value '%s' type '%v' namespace '%s'",
-				arr[0], v.Type(), string(namespace)))
+				arr[idx], v.Type(), string(namespace)))
 
 			return false
 		}
