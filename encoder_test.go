@@ -1077,8 +1077,8 @@ func TestEncoderStructCustomNamespace(t *testing.T) {
 
 	encoder := NewEncoder()
 	encoder.SetTagName("form")
-	encoder.RegisterCustomTypeFunc(func(x interface{}) ([]string, error) {
-		return []string{x.(time.Time).Format("2006-01-02")}, nil
+	encoder.RegisterFunc(func(x interface{}) (string, error) {
+		return x.(time.Time).Format("2006-01-02"), nil
 	}, time.Time{})
 	encoder.SetNamespacePrefix("[")
 	encoder.SetNamespaceSuffix("]")
@@ -1536,13 +1536,13 @@ func TestOmitEmpty(t *testing.T) {
 	}
 
 	type Test struct {
-		String  string            `form:",omitempty"`
-		Array   []string          `form:",omitempty"`
-		Map     map[string]string `form:",omitempty"`
-		String2 string            `form:"str,omitempty"`
-		Array2  []string          `form:"arr,omitempty"`
-		Map2    map[string]string `form:"map,omitempty"`
-		NotComparable			  `form:",omitempty"`
+		String        string            `form:",omitempty"`
+		Array         []string          `form:",omitempty"`
+		Map           map[string]string `form:",omitempty"`
+		String2       string            `form:"str,omitempty"`
+		Array2        []string          `form:"arr,omitempty"`
+		Map2          map[string]string `form:"map,omitempty"`
+		NotComparable `form:",omitempty"`
 	}
 
 	var tst Test

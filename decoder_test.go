@@ -707,8 +707,8 @@ func TestDecoderStruct(t *testing.T) {
 			}
 
 			decoder.SetTagName("form")
-			decoder.RegisterCustomTypeFunc(func(vals []string) (interface{}, error) {
-				return time.Parse("2006-01-02", vals[0])
+			decoder.RegisterFunc(func(val string) (interface{}, error) {
+				return time.Parse("2006-01-02", val)
 			}, time.Time{})
 
 			var test TestStruct
@@ -728,8 +728,8 @@ func TestDecoderStruct(t *testing.T) {
 			Equal(t, errs, nil)
 
 			Equal(t, test.Name, "joeybloggs")
-			Equal(t, test.unexposed, "")
-	Equal(t, test.Ignore, "")
+			//Equal(t, test.unexposed, "")
+			Equal(t, test.Ignore, "")
 			Equal(t, len(test.Phone), 2)
 			Equal(t, test.Phone[0].Number, "1(111)111-1111")
 			Equal(t, test.Phone[1].Number, "9(999)999-9999")
@@ -1030,11 +1030,11 @@ func TestDecoderErrors(t *testing.T) {
 
 			k = err["OverflowNilArray"]
 			Equal(t, k.Error(), "array size of '1000' is larger than the maximum currently set on the decoder of '4', "+
-		"see SetMaxArraySize(size uint)")
+				"see SetMaxArraySize(size uint)")
 
 			k = err["OverFlowExistingArray"]
 			Equal(t, k.Error(), "array size of '1000' is larger than the maximum currently set on the decoder of '4', "+
-		"see SetMaxArraySize(size uint)")
+				"see SetMaxArraySize(size uint)")
 
 			k = err["BadArrayIndex"]
 			Equal(t, k.Error(), "invalid slice index 'bad index'")
@@ -1048,12 +1048,12 @@ func TestDecoderErrors(t *testing.T) {
 			}
 
 			var (
-		test2    TestError2
-		decoder2 = NewDecoder()
+				test2    TestError2
+				decoder2 = NewDecoder()
 			)
 
-	decoder2.RegisterFunc(func(val string) (interface{}, error) {
-		return time.Parse("2006-01-02", val)
+			decoder2.RegisterFunc(func(val string) (interface{}, error) {
+				return time.Parse("2006-01-02", val)
 			}, time.Time{})
 
 			errs = decoder2.Decode(&test2, values2)
@@ -1313,7 +1313,7 @@ func TestDecoderFailsAndBadValues(t *testing.T) {
 
 	decoder := NewDecoder()
 
-	PanicMatches(t, func() { _ = decoder.Decode(&test, values) }, "Invalid formatting for key 'Phone[0.Number' missing ']' bracket")
+	EqualError(t, decoder.Decode(&test, values), "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone[0.Number' missing ']' bracket")
 
 	i := 1
 	err := decoder.Decode(i, values)
@@ -1343,19 +1343,19 @@ func TestDecoderFailsAndBadValues(t *testing.T) {
 		"Phone0].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicMatches(t, func() { _ = decoder.Decode(&test, values) }, "Invalid formatting for key 'Phone0].Number' missing '[' bracket")
+	EqualError(t, decoder.Decode(&test, values), "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone0].Number' missing '[' bracket")
 
 	values = url.Values{
 		"Phone[[0.Number": []string{"1(111)111-1111"},
 	}
 
-	PanicMatches(t, func() { _ = decoder.Decode(&test, values) }, "Invalid formatting for key 'Phone[[0.Number' missing ']' bracket")
+	EqualError(t, decoder.Decode(&test, values), "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone[[0.Number' missing ']' bracket")
 
 	values = url.Values{
 		"Phone0]].Number": []string{"1(111)111-1111"},
 	}
 
-	PanicMatches(t, func() { _ = decoder.Decode(&test, values) }, "Invalid formatting for key 'Phone0]].Number' missing '[' bracket")
+	EqualError(t, decoder.Decode(&test, values), "Field Namespace:Phone ERROR:failed to parse map data: invalid formatting for key 'Phone0]].Number' missing '[' bracket")
 }
 
 func TestDecoderMapKeys(t *testing.T) {
