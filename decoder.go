@@ -186,7 +186,7 @@ func (d *decoder) traverseStruct(v reflect.Value, typ reflect.Type, namespace []
 		}
 
 		if d.setFieldByType(v.Field(f.idx), false, namespace, 0) {
-			if d.goValues != nil {
+			if d.goValues != nil && f.name == string(namespace) {
 				d.goValues[f.name] = v.Field(f.idx).Interface()
 			}
 
