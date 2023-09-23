@@ -138,6 +138,7 @@ func (e *encoder) setFieldByType(current reflect.Value, namespace []byte, idx in
 			}
 
 			e.setVal(namespace, v, string(val))
+			return
 		}
 	}
 
